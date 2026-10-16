@@ -27,11 +27,11 @@ h2 { font-family: var(--f-display); font-weight: 600; font-size: 1.15rem; margin
 .sub { color: var(--muted); margin: 6px 0 0; }
 
 .brand { background: #FFFFFF; border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
-.brand img { width: 168px; height: auto; display: block; }
+.brand img { width: 72px; height: auto; display: block; }
 .brand h1 { color: var(--brand-gray); }
 .brand .sub { color: #666666; margin-top: 4px; }
 .brand > div { flex: 1 1 260px; min-width: 0; border-left: 3px solid var(--brand-red); padding-left: 16px; }
-.brand.compact img { width: 140px; }
+.brand.compact img { width: 56px; }
 @media (max-width: 540px) { .brand > div { border-left: 0; padding-left: 0; } }
 
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }

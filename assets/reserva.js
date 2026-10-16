@@ -37,7 +37,7 @@
       const card = el("div", "car");
       const pl = el("span", "plate"); pl.appendChild(el("span", "", v.placa));
       const dr = diaRodizio(v.nome);
-      card.append(el("div", "nm", v.nome), pl, el("div", "rz", dr !== null ? "Rodízio: não circula às " + DIAS[dr] + "s, 7h–10h e 17h–20h" : ""));
+      card.append(el("div", "nm", v.nome), pl, el("div", "rz", dr !== null ? "Não Circular: " + DIAS[dr] + "s, 7h–10h e 17h–20h (rodízio)" : ""));
       cars.appendChild(card);
       const o = el("option", "", v.nome + " · " + v.placa); o.value = v.nome; sel.appendChild(o);
     });

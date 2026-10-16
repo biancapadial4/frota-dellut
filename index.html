@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reserva de Veículo · Dellut</title>
+<meta name="description" content="Peça o carro da empresa. O pedido vale depois da aprovação do gestor.">
+<link rel="icon" type="image/png" href="assets/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <img src="assets/logo.png" alt="Dellut" width="168" height="61">
+    <div>
+      <h1>Reserva de Veículo</h1>
+      <p class="sub">O pedido só vale depois que o gestor aprova, e você recebe a resposta por e-mail.</p>
+    </div>
+  </header>
+
+  <div class="cars" id="cars"></div>
+
+  <section class="panel" aria-labelledby="t-novo">
+    <h2 id="t-novo">Novo pedido</h2>
+    <form id="form" novalidate>
+      <label>Nome de quem vai usar<input id="nome" type="text" maxlength="80" autocomplete="name" required></label>
+      <label>Seu e-mail<input id="email" type="email" maxlength="120" autocomplete="email" placeholder="para receber a resposta" required></label>
+      <label class="full">Veículo<select id="veiculo" required></select></label>
+      <label>Saída<span class="pair"><input id="di" type="date" required><input id="hi" type="time" required></span></label>
+      <label>Devolução<span class="pair"><input id="df" type="date" required><input id="hf" type="time" required></span></label>
+      <label>Destino<input id="destino" type="text" maxlength="120" placeholder="Ex.: obra Guarujá" required></label>
+      <label>Centro de custo<select id="centro" required><option value="">Carregando…</option></select></label>
+      <label class="full">Finalidade<textarea id="finalidade" maxlength="400" placeholder="Ex.: vistoria de obra, entrega de documentos" required></textarea></label>
+      <div id="rod" class="notice warn full" hidden></div>
+      <div id="msg" class="notice full" hidden></div>
+      <div class="full"><button class="btn primary" type="submit" id="enviar" disabled>Enviar pedido</button></div>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="t-agenda">
+    <h2 id="t-agenda">Agenda dos carros</h2>
+    <div class="weeknav">
+      <button class="btn small" type="button" id="prev" aria-label="Semana anterior">‹</button>
+      <div class="lbl" id="wlbl"></div>
+      <button class="btn small" type="button" id="next" aria-label="Próxima semana">›</button>
+    </div>
+    <div class="legend"><span><span class="pill Aprovada">aprovada</span> carro reservado</span><span><span class="pill Pendente">pendente</span> aguardando o gestor</span></div>
+    <div id="semana"><p class="free">Carregando a agenda…</p></div>
+  </section>
+</div>
+<script src="config.js"></script>
+<script src="assets/comum.js"></script>
+<script src="assets/reserva.js"></script>
+</body>
+</html>

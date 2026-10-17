@@ -37,7 +37,8 @@
       const card = el("div", "car");
       const pl = el("span", "plate"); pl.appendChild(el("span", "", v.placa));
       const dr = diaRodizio(v.nome);
-      card.append(el("div", "nm", v.nome), pl, el("div", "rz", dr !== null ? "Não Circular: " + DIAS[dr] + "s, 7h–10h e 17h–20h (rodízio)" : ""));
+      const prox = el("div", "prox"); prox.dataset.veiculo = v.nome;
+      card.append(el("div", "nm", v.nome), pl, el("div", "rz", dr !== null ? "Não Circular: " + DIAS[dr] + "s, 7h–10h e 17h–20h (rodízio)" : ""), prox);
       cars.appendChild(card);
       const o = el("option", "", v.nome + " · " + v.placa); o.value = v.nome; sel.appendChild(o);
     });
@@ -90,6 +91,28 @@
     }
   });
 
+  // Próximas reservas aprovadas de cada carro (30 dias), com nome e horário.
+  async function carregaProximas() {
+    try {
+      const r = await api("agenda", { ini: CFG.hoje, fim: add(CFG.hoje, 30) });
+      const agora = new Date(); const agoraTxt = CFG.hoje + " " + pad(agora.getHours()) + ":" + pad(agora.getMinutes());
+      const lista = ((r && r.reservas) || []).filter(x => x.status === "Aprovada" && x.fim > agoraTxt)
+        .sort((a, b) => a.inicio.localeCompare(b.inicio));
+      document.querySelectorAll(".prox").forEach(box => {
+        box.innerHTML = "";
+        const doCarro = lista.filter(x => x.veiculo === box.dataset.veiculo);
+        box.appendChild(el("div", "prox-t", doCarro.length ? "Próximas reservas" : "Sem reservas aprovadas nos próximos 30 dias"));
+        doCarro.slice(0, 3).forEach(x => {
+          const mesmoDia = x.inicio.slice(0, 10) === x.fim.slice(0, 10);
+          const quando = mesmoDia ? fmt(x.inicio) + "–" + x.fim.slice(11, 16) : fmt(x.inicio) + " → " + fmt(x.fim);
+          const li = el("div", "prox-i"); li.append(el("span", "time", quando), el("b", "", x.nome));
+          box.appendChild(li);
+        });
+        if (doCarro.length > 3) box.appendChild(el("div", "prox-t", "+ " + (doCarro.length - 3) + " na agenda"));
+      });
+    } catch (err) { /* os cartões continuam sem a lista */ }
+  }
+
   async function carrega() {
     const fim = add(semana, 6);
     $("#wlbl").textContent = (+semana.slice(8, 10)) + " " + MES[+semana.slice(5, 7) - 1] + " – " + (+fim.slice(8, 10)) + " " + MES[+fim.slice(5, 7) - 1] + (semana === monday(CFG.hoje) ? " · esta semana" : "");
@@ -134,7 +157,7 @@
     try {
       const c = await api("config");
       if (c && c.ok) { CFG = { veiculos: c.veiculos, centros: c.centros, hoje: c.hoje }; semana = monday(CFG.hoje); }
-      montaCarros(); valoresIniciais(); atualizaRodizio();
+      montaCarros(); valoresIniciais(); atualizaRodizio(); carregaProximas();
       $("#enviar").disabled = false;
     } catch (err) {
       mensagem("Não foi possível carregar os carros. Recarregue a página em alguns segundos.", "bad");

@@ -16,7 +16,10 @@ const CONFIG = {
 
   // Endereço do site na Vercel (ex.: 'https://frota-dellut.vercel.app').
   // Os botões Aprovar/Recusar do e-mail abrem esse site. Vazio = usa a página do próprio Apps Script.
-  SITE_URL: '',
+  SITE_URL: 'https://frota-dellut.vercel.app',
+
+  // Quem pode aprovar ou recusar (aparece como lista na página de aprovação)
+  APROVADORES: ['Bianca', 'Marco', 'Ana Claudia'],
 
   VEICULOS: [
     { nome: 'HB20', placa: 'TEK2E75' },
@@ -46,9 +49,9 @@ const JANELAS = [['07:00', '10:00'], ['17:00', '20:00']];
 const DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
 const CAB = ['ID', 'Criado em', 'Status', 'Veículo', 'Saída', 'Devolução', 'Nome de quem vai usar',
   'E-mail do solicitante', 'Destino', 'Finalidade', 'Centro de custo', 'Alerta de rodízio',
-  'Decidido em', 'Observação do gestor', 'Token'];
+  'Decidido em', 'Observação do gestor', 'Token', 'Decidido por'];
 const C = { id: 0, criado: 1, status: 2, veiculo: 3, inicio: 4, fim: 5, nome: 6, email: 7, destino: 8,
-  finalidade: 9, centro: 10, alerta: 11, decidido: 12, obs: 13, token: 14 };
+  finalidade: 9, centro: 10, alerta: 11, decidido: 12, obs: 13, token: 14, por: 15 };
 
 /** Rode esta função uma vez no editor para autorizar e criar a planilha. */
 function instalar() {
@@ -84,7 +87,7 @@ function doPost(e) {
   try {
     switch (body.acao) {
       case 'config':
-        res = { ok: true, veiculos: CONFIG.VEICULOS, centros: CONFIG.CENTROS_CUSTO, hoje: agora_().slice(0, 10) };
+        res = { ok: true, veiculos: CONFIG.VEICULOS, centros: CONFIG.CENTROS_CUSTO, aprovadores: CONFIG.APROVADORES, hoje: agora_().slice(0, 10) };
         break;
       case 'agenda':
         res = { ok: true, reservas: getAgenda(String(body.ini || ''), String(body.fim || '')) };
@@ -99,7 +102,7 @@ function doPost(e) {
         break;
       }
       case 'decidir':
-        res = decidir(String(body.id || ''), String(body.t || ''), body.tipo, body.obs);
+        res = decidir(String(body.id || ''), String(body.t || ''), body.tipo, body.obs, body.por);
         break;
       default:
         res = { ok: false, erro: 'Ação desconhecida.' };
@@ -182,9 +185,10 @@ function criarReserva(d) {
 }
 
 /** Chamado pela página de aprovação. */
-function decidir(id, t, acao, obs) {
+function decidir(id, t, acao, obs, por) {
   acao = acao === 'recusar' ? 'recusar' : 'aprovar';
   obs = txt_(obs, 300);
+  por = CONFIG.APROVADORES.indexOf(String(por || '')) >= 0 ? String(por) : '';
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   let r;
@@ -202,6 +206,9 @@ function decidir(id, t, acao, obs) {
     }
     r.status = acao === 'aprovar' ? 'Aprovada' : 'Recusada';
     r.obs = obs;
+    r.por = por;
+    if (!String(sh.getRange(1, C.por + 1).getValue())) sh.getRange(1, C.por + 1).setValue(CAB[C.por]).setFontWeight('bold').setBackground('#E2ECF5');
+    sh.getRange(i + 1, C.por + 1).setValue(por);
     sh.getRange(i + 1, C.status + 1).setValue(r.status);
     sh.getRange(i + 1, C.decidido + 1).setValue(agora_());
     sh.getRange(i + 1, C.obs + 1).setValue(obs);
@@ -248,12 +255,12 @@ function linhaParaObj_(row) {
   const s = k => String(row[C[k]] == null ? '' : row[C[k]]).trim();
   return { id: s('id'), status: s('status'), veiculo: s('veiculo'), inicio: s('inicio'), fim: s('fim'), nome: s('nome'),
     email: s('email'), destino: s('destino'), finalidade: s('finalidade'), centro: s('centro'), alerta: s('alerta'),
-    obs: s('obs'), token: s('token') };
+    obs: s('obs'), token: s('token'), por: s('por') };
 }
 function buscar_(id) { return lerTodas_().find(r => r.id === String(id)) || null; }
 function publico_(r) {
   return { id: r.id, status: r.status, veiculo: r.veiculo, inicio: fmt_(r.inicio), fim: fmt_(r.fim), nome: r.nome,
-    email: r.email, destino: r.destino, finalidade: r.finalidade, centro: r.centro, alerta: r.alerta };
+    email: r.email, destino: r.destino, finalidade: r.finalidade, centro: r.centro, alerta: r.alerta, por: r.por };
 }
 
 // ----------------------------------------------------------------- rodízio
@@ -297,6 +304,7 @@ function email_(titulo, intro, r, botoes) {
     ['Quem vai usar', r.nome], ['E-mail do solicitante', r.email], ['Destino', r.destino], ['Finalidade', r.finalidade],
     ['Centro de custo', r.centro]
   ];
+  if (r.por) linhas.push([r.status === 'Recusada' ? 'Recusado por' : 'Aprovado por', r.por]);
   if (r.obs) linhas.push(['Observação do gestor', r.obs]);
   const tabela = linhas.map(l => '<tr><td style="padding:6px 12px 6px 0;color:#5A6774;white-space:nowrap;vertical-align:top">' + esc_(l[0]) +
     '</td><td style="padding:6px 0;color:#15202B;font-weight:600">' + esc_(l[1]) + '</td></tr>').join('');

@@ -39,6 +39,11 @@ h2 { font-family: var(--f-display); font-weight: 600; font-size: 1.15rem; margin
 .car { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .car .nm { font-family: var(--f-display); font-weight: 700; font-size: 1.15rem; }
 .car .rz { font-size: .85rem; color: var(--warn); font-weight: 600; }
+.car .prox { width: 100%; border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.car .prox:empty { display: none; }
+.prox-t { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+.prox-i { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: .9rem; }
+.prox-i .time { font-size: .85rem; color: var(--ok); }
 
 .plate { display: inline-flex; flex-direction: column; border: 1.5px solid #111; border-radius: 4px; overflow: hidden; background: #fff; color: #111; font-family: var(--f-mono); line-height: 1; }
 .plate::before { content: "BRASIL"; background: var(--band); color: #fff; font: 600 .5rem var(--f-body); letter-spacing: .15em; text-align: center; padding: 2px 6px; }

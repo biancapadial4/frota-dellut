@@ -142,9 +142,10 @@
         const rt = el("div", "rt");
         const left = el("span", "left");
         const vv = CFG.veiculos.find(x => x.nome === r.veiculo);
-        const pl = el("span", "plate sm"); pl.appendChild(el("span", "", vv ? vv.placa : r.veiculo));
+        // Selo no formato de placa: placa na faixa azul em cima, modelo embaixo.
+        const pl = el("span", "plate sm"); pl.append(el("span", "pb", vv ? vv.placa : ""), el("span", "", r.veiculo));
         const mesmoDia = r.inicio.slice(0, 10) === r.fim.slice(0, 10);
-        left.append(pl, el("span", "carro", r.veiculo), el("span", "time", mesmoDia ? r.inicio.slice(11) + " – " + r.fim.slice(11) : fmt(r.inicio) + " → " + fmt(r.fim)));
+        left.append(pl, el("span", "time", mesmoDia ? r.inicio.slice(11) + " – " + r.fim.slice(11) : fmt(r.inicio) + " → " + fmt(r.fim)));
         rt.append(left, el("span", "pill " + r.status, r.status === "Aprovada" ? "reservado" : "pendente"));
         const meta = el("div", "meta"); meta.append(el("b", "", r.nome), document.createTextNode(" → " + r.destino));
         c.append(rt, meta); list.appendChild(c);

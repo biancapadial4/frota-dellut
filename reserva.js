@@ -1,7 +1,7 @@
 // Página de pedido e agenda.
 (function () {
   const { pad, parse, add, api, el } = window.Frota;
-  const WD = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+  const WD = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const DIAS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
   const MES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
   const RODIZIO = { 1: [1, 2], 2: [3, 4], 3: [5, 6], 4: [7, 8], 5: [9, 0] };
@@ -13,6 +13,8 @@
   let CFG = { veiculos: VEICULOS_PADRAO, centros: [], hoje: hojeLocal() };
   let semana = monday(CFG.hoje), reservas = [];
 
+  // Primeira letra maiúscula (nomes e destinos digitados em minúsculas).
+  function maiuscula(s) { s = String(s || "").trim(); return s ? s.charAt(0).toLocaleUpperCase("pt-BR") + s.slice(1) : s; }
   function hojeLocal() { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
   function monday(s) { return add(s, -((parse(s).getUTCDay() + 6) % 7)); }
   function fmt(s) { return s.slice(8, 10) + "/" + s.slice(5, 7) + " " + s.slice(11, 16); }
@@ -136,7 +138,7 @@
         doCarro.slice(0, 3).forEach(x => {
           const mesmoDia = x.inicio.slice(0, 10) === x.fim.slice(0, 10);
           const quando = mesmoDia ? fmt(x.inicio) + "–" + x.fim.slice(11, 16) : fmt(x.inicio) + " → " + fmt(x.fim);
-          const li = el("div", "prox-i"); li.append(el("span", "time", quando), el("b", "", x.nome));
+          const li = el("div", "prox-i"); li.append(el("span", "time", quando), el("b", "", maiuscula(x.nome)));
           box.appendChild(li);
         });
         if (doCarro.length > 3) box.appendChild(el("div", "prox-t", "+ " + (doCarro.length - 3) + " na agenda"));
@@ -146,7 +148,7 @@
 
   async function carrega() {
     const fim = add(semana, 6);
-    $("#wlbl").textContent = (+semana.slice(8, 10)) + " " + MES[+semana.slice(5, 7) - 1] + " – " + (+fim.slice(8, 10)) + " " + MES[+fim.slice(5, 7) - 1] + (semana === monday(CFG.hoje) ? " · esta semana" : "");
+    $("#wlbl").textContent = (+semana.slice(8, 10)) + " " + MES[+semana.slice(5, 7) - 1] + " – " + (+fim.slice(8, 10)) + " " + MES[+fim.slice(5, 7) - 1] + (semana === monday(CFG.hoje) ? " · Esta semana" : "");
     try {
       const r = await api("agenda", { ini: semana, fim: fim });
       reservas = (r && r.reservas) || [];
@@ -162,7 +164,7 @@
       const d = add(semana, n);
       const row = el("div", "day" + (d === CFG.hoje ? " today" : "") + (d < CFG.hoje ? " past" : ""));
       const dl = el("div", "dl");
-      dl.append(el("span", "wd", WD[parse(d).getUTCDay()] + (d === CFG.hoje ? " · hoje" : "")), el("span", "dn", String(+d.slice(8, 10))));
+      dl.append(el("span", "wd", WD[parse(d).getUTCDay()] + (d === CFG.hoje ? " · Hoje" : "")), el("span", "dn", String(+d.slice(8, 10))));
       const list = el("div", "list");
       const doDia = reservas.filter(r => r.inicio < d + " 24:00" && d + " 00:00" < r.fim).sort((a, b) => a.inicio.localeCompare(b.inicio));
       if (!doDia.length) list.appendChild(el("div", "free", "Os dois carros livres"));
@@ -175,8 +177,8 @@
         const pl = el("span", "plate sm"); pl.append(el("span", "pb", vv ? vv.placa : ""), el("span", "", r.veiculo));
         const mesmoDia = r.inicio.slice(0, 10) === r.fim.slice(0, 10);
         left.append(pl, el("span", "time", mesmoDia ? r.inicio.slice(11) + " – " + r.fim.slice(11) : fmt(r.inicio) + " → " + fmt(r.fim)));
-        rt.append(left, el("span", "pill " + r.status, r.status === "Aprovada" ? "reservado" : "pendente"));
-        const meta = el("div", "meta"); meta.append(el("b", "", r.nome), document.createTextNode(" → " + r.destino));
+        rt.append(left, el("span", "pill " + r.status, r.status === "Aprovada" ? "Reservado" : "Pendente"));
+        const meta = el("div", "meta"); meta.append(el("b", "", maiuscula(r.nome)), document.createTextNode(" → " + maiuscula(r.destino)));
         c.append(rt, meta); list.appendChild(c);
       });
       row.append(dl, list); box.appendChild(row);

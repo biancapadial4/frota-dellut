@@ -41,21 +41,27 @@ h2 { font-family: var(--f-display); font-weight: 600; font-size: 1.15rem; margin
 .car .rz { font-size: .85rem; color: var(--warn); font-weight: 600; }
 .car .prox { width: 100%; border-top: 1px solid var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
 .car .prox:empty { display: none; }
-.prox-t { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+.prox-t { font-size: .82rem; color: var(--muted); font-weight: 600; }
 .prox-i { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; font-size: .9rem; }
 .prox-i .time { font-size: .85rem; color: var(--ok); }
 
 .plate { display: inline-flex; flex-direction: column; border: 1.5px solid #111; border-radius: 4px; overflow: hidden; background: #fff; color: #111; font-family: var(--f-mono); line-height: 1; }
 .plate::before { content: "BRASIL"; background: var(--band); color: #fff; font: 600 .5rem var(--f-body); letter-spacing: .15em; text-align: center; padding: 2px 6px; }
 .plate span { padding: 4px 10px; font-size: .95rem; letter-spacing: .08em; }
-.plate.sm span { padding: 2px 6px; font-size: .75rem; }
+.plate.sm::before { display: none; }
+.plate.sm span { padding: 2px 8px; font-size: .75rem; text-align: center; }
+.plate.sm .pb { background: var(--band); color: #fff; font: 600 .62rem var(--f-mono); letter-spacing: .1em; padding: 2px 6px; }
 
 form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .full { grid-column: 1 / -1; }
 @media (max-width: 540px) { form, .cars { grid-template-columns: minmax(0, 1fr); } }
-label { display: flex; flex-direction: column; gap: 5px; font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+label { display: flex; flex-direction: column; gap: 5px; font-size: .88rem; font-weight: 600; color: var(--muted); }
 input, select, textarea { font: inherit; font-size: 15px; text-transform: none; letter-spacing: 0; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; min-height: 42px; width: 100%; }
 textarea { min-height: 70px; resize: vertical; }
+.hint { font-size: .78rem; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); }
+input[type=file] { padding: 7px 8px; }
+.notice.aviso { font-size: .9rem; }
+.notice.aviso b { color: var(--accent); }
 .pair { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 8px; }
 input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -78,7 +84,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .day { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
 .day:first-child { border-top: 0; }
 .dl { display: flex; flex-direction: column; line-height: 1.1; }
-.dl .wd { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.dl .wd { font-size: .8rem; color: var(--muted); font-weight: 600; }
 .dl .dn { font-family: var(--f-display); font-weight: 700; font-size: 1.5rem; }
 .day.today .dn { color: var(--accent); }
 .day.past { opacity: .55; }
@@ -90,7 +96,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 .rt .left { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .rt .carro { font-weight: 600; font-size: .9rem; }
 .time { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: .92rem; }
-.pill { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+.pill { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
 .pill.Pendente { background: var(--warn-bg); color: var(--warn); }
 .pill.Aprovada { background: var(--ok-bg); color: var(--ok); }
 .meta { color: var(--muted); font-size: .88rem; }

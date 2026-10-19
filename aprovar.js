@@ -14,12 +14,13 @@
     box.innerHTML = "";
     const painel = el("div", "panel");
     const dl = el("dl", "dados");
-    [["Status", r.status], ["Veículo", r.veiculo], ["Saída", r.inicio], ["Devolução", r.fim], ["Quem vai usar", r.nome],
+    [["Status", r.status], ["Veículo", r.veiculo], ["Saída", r.inicio], ["Devolução", r.fim], ["Solicitante", r.solicitante || r.nome], ["Motorista", r.nome],
       ["E-mail", r.email], ["Destino", r.destino], ["Finalidade", r.finalidade], ["Centro de custo", r.centro]]
       .concat(r.por ? [[r.status === "Recusada" ? "Recusado por" : r.status === "Cancelada" ? "Cancelado por" : "Aprovado por", r.por]] : [])
       .forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v)));
     painel.appendChild(dl);
     if (r.alerta) painel.appendChild(aviso(r.alerta, "warn"));
+    if (r.solicitante) painel.appendChild(aviso("A CNH do motorista está anexada ao e-mail do pedido.", ""));
     box.appendChild(painel);
 
     if (r.status === "Aprovada") { mostraCancelar(); return; }

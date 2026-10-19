@@ -57,7 +57,7 @@
   }
 
   function dados() {
-    return { nome: $("#nome").value, email: $("#email").value, veiculo: $("#veiculo").value,
+    return { solicitante: $("#solicitante").value, nome: $("#nome").value, email: $("#email").value, veiculo: $("#veiculo").value,
       di: $("#di").value, hi: $("#hi").value, df: $("#df").value, hf: $("#hf").value,
       destino: $("#destino").value, finalidade: $("#finalidade").value, centro: $("#centro").value };
   }
@@ -67,6 +67,33 @@
     $("#rod").textContent = msg ? msg + " Ajuste o horário ou escolha o outro carro." : "";
     $("#rod").hidden = !msg;
   }
+  // Lê a CNH anexada. Fotos são reduzidas (lado maior 1600 px, JPEG) para o e-mail não ficar pesado.
+  const MAX_CNH = 4 * 1024 * 1024;
+  function lerArquivo(f) {
+    return new Promise((ok, falha) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = falha; fr.readAsDataURL(f); });
+  }
+  async function preparaCnh(f) {
+    if (!f) throw new Error("Anexe a foto ou o PDF da CNH do motorista.");
+    if (f.type === "application/pdf") {
+      if (f.size > MAX_CNH) throw new Error("O PDF da CNH é grande demais (máx. 4 MB).");
+      return { nome: f.name, tipo: "application/pdf", b64: (await lerArquivo(f)).split(",")[1] };
+    }
+    if (!/^image\//.test(f.type)) throw new Error("A CNH precisa ser foto ou PDF.");
+    try {
+      const img = await new Promise((ok, falha) => { const i = new Image(); i.onload = () => ok(i); i.onerror = falha; i.src = URL.createObjectURL(f); });
+      const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(img.naturalWidth * k); cv.height = Math.round(img.naturalHeight * k);
+      const g = cv.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(img.src);
+      return { nome: f.name, tipo: "image/jpeg", b64: cv.toDataURL("image/jpeg", 0.85).split(",")[1] };
+    } catch (e) {
+      // Formato que o navegador não abre (ex.: HEIC): manda como está, se for JPG/PNG.
+      if ((f.type === "image/jpeg" || f.type === "image/png") && f.size <= MAX_CNH) return { nome: f.name, tipo: f.type, b64: (await lerArquivo(f)).split(",")[1] };
+      throw new Error("Não foi possível ler a foto da CNH. Envie em JPG, PNG ou PDF.");
+    }
+  }
+
   function mensagem(t, tipo) { const m = $("#msg"); m.className = "notice full" + (tipo ? " " + tipo : ""); m.textContent = t || ""; m.hidden = !t; }
 
   $("#di").addEventListener("change", () => { if (!$("#df").value || $("#df").value < $("#di").value) $("#df").value = $("#di").value; });
@@ -76,15 +103,17 @@
   $("#form").addEventListener("submit", async e => {
     e.preventDefault();
     const d = dados();
-    if (!d.nome.trim() || !d.email.trim() || !d.destino.trim() || !d.finalidade.trim() || !d.centro || !d.di || !d.hi || !d.df || !d.hf)
+    if (!d.solicitante.trim() || !d.nome.trim() || !d.email.trim() || !d.destino.trim() || !d.finalidade.trim() || !d.centro || !d.di || !d.hi || !d.df || !d.hf)
       return mensagem("Preencha todos os campos.", "bad");
     if (d.df + " " + d.hf <= d.di + " " + d.hi) return mensagem("A devolução precisa ser depois da saída.", "bad");
+    if (!$("#cnh").files[0]) return mensagem("Anexe a foto ou o PDF da CNH do motorista.", "bad");
     const b = $("#enviar"); b.disabled = true; b.textContent = "Enviando…"; mensagem("");
     try {
+      try { d.cnh = await preparaCnh($("#cnh").files[0]); } catch (er) { mensagem(er.message, "bad"); return; }
       const r = await api("criar", { dados: d });
       if (!r || !r.ok) { mensagem((r && r.erro) || "Não foi possível enviar. Tente de novo.", "bad"); return; }
       mensagem("Pedido enviado. Ele aparece como pendente na agenda, e você recebe um e-mail quando o gestor responder.", "good");
-      $("#destino").value = ""; $("#finalidade").value = "";
+      $("#destino").value = ""; $("#finalidade").value = ""; $("#cnh").value = "";
       semana = monday(d.di); carrega();
     } catch (err) {
       mensagem("Não foi possível enviar agora. Confira sua internet e tente de novo.", "bad");
@@ -160,7 +189,7 @@
   (async function inicia() {
     try {
       const c = await api("config");
-      if (c && c.ok) { CFG = { veiculos: c.veiculos, centros: c.centros, hoje: c.hoje }; semana = monday(CFG.hoje); }
+      if (c && c.ok) { CFG = { veiculos: c.veiculos, centros: c.centros, hoje: c.hoje }; semana = monday(CFG.hoje); if (c.aviso) $("#aviso-txt").textContent = c.aviso; }
       montaCarros(); valoresIniciais(); atualizaRodizio(); carregaProximas();
       $("#enviar").disabled = false;
     } catch (err) {

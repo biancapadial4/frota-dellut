@@ -12,7 +12,7 @@
     const painel = el("div", "panel");
     const dl = el("dl", "dados");
     [["Status", r.status], ["Veículo", r.veiculo], ["Saída", r.inicio], ["Devolução", r.fim],
-      ["Quem vai usar", r.nome], ["Destino", r.destino], ["Centro de custo", r.centro]]
+      ["Solicitante", r.solicitante || r.nome], ["Motorista", r.nome], ["Destino", r.destino], ["Centro de custo", r.centro]]
       .forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v)));
     painel.appendChild(dl);
     box.appendChild(painel);

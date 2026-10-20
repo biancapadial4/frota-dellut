@@ -4,7 +4,7 @@
   const { api, el } = window.Frota;
   const box = document.getElementById("conteudo");
   const p = new URLSearchParams(location.search);
-  const acao = p.get("acao") === "recusar" ? "recusar" : "aprovar";
+  const acao = ["recusar", "cancelar"].indexOf(p.get("acao")) >= 0 ? p.get("acao") : "aprovar";
   const id = p.get("id"), t = p.get("t");
   const aviso = (txt, tipo) => el("div", "notice " + tipo, txt);
 
@@ -23,7 +23,7 @@
     if (r.solicitante) painel.appendChild(aviso("A CNH do motorista está anexada ao e-mail do pedido.", ""));
     box.appendChild(painel);
 
-    if (r.status === "Aprovada") { mostraCancelar(); return; }
+    if (r.status === "Aprovada" || (r.status === "Pendente" && acao === "cancelar")) { mostraCancelar(r.status); return; }
     if (r.status !== "Pendente") {
       box.appendChild(aviso('Este pedido já está com status "' + r.status + '". Nada mais precisa ser feito.', "good"));
       return;
@@ -71,8 +71,8 @@
   }
 
   // Reserva já aprovada: o gestor pode cancelar (ex.: a pessoa desistiu e avisou).
-  function mostraCancelar() {
-    document.getElementById("titulo").textContent = "Reserva aprovada";
+  function mostraCancelar(status) {
+    document.getElementById("titulo").textContent = status === "Aprovada" ? "Reserva aprovada" : "Cancelar pedido?";
     const caixa = el("div", "panel");
     caixa.appendChild(el("p", "sub", "Se quem pediu desistiu do carro, cancele aqui para liberar o horário."));
     const lblPor = el("label", "", "Quem está cancelando");
